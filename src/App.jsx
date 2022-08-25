@@ -15,6 +15,10 @@ function App() {
   const [newUser, setNewUser] = useState({ name: "", age: "" });
   const userCollectionRef = collection(db, "users");
 
+  const register = async () => {};
+  const login = async () => {};
+  const logout = async () => {};
+
   const createUser = async () => {
     await addDoc(userCollectionRef, newUser);
     setNewUser({ name: "", age: "" });
@@ -37,13 +41,12 @@ function App() {
         key={index}
         style={{
           display: "flex",
-          border: "1px solid grey",
-          margin: "10px",
-          borderRadius: "10px",
+          // margin: "10px",
           alignItems: "center",
           flexDirection: "column",
           gap: "10px",
           padding: "10px",
+          borderBottom: "1px solid grey",
         }}
       >
         <span>Name : {user.name}</span>
@@ -78,20 +81,37 @@ function App() {
 
   return (
     <div className="App">
-      <input
-        value={newUser.name}
-        placeholder="Name..."
-        onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-      />
-      <input
-        value={newUser.age}
-        type="number"
-        placeholder="Age..."
-        onChange={(e) => setNewUser({ ...newUser, age: e.target.value })}
-      />
-      <button onClick={createUser}>Create User</button>
+      <>
+        <div>
+          <h3>Register User</h3>
+          <input placeholder="Email..." />
+          <input placeholder="Password..." />
+          <button>Create User</button>
+        </div>
+        <div>
+          <h3>Login</h3>
+          <input placeholder="Email..." />
+          <input placeholder="Password..." />
+          <button>Login</button>
+        </div>
+      </>
+      <>
+        <h3>Add User</h3>
+        <input
+          value={newUser.name}
+          placeholder="Name..."
+          onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+        />
+        <input
+          value={newUser.age}
+          type="number"
+          placeholder="Age..."
+          onChange={(e) => setNewUser({ ...newUser, age: e.target.value })}
+        />
+        <button onClick={createUser}>Create User</button>
 
-      {users.map(renderUsers)}
+        {users.map(renderUsers)}
+      </>
     </div>
   );
 }
