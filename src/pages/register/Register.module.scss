@@ -1,0 +1,53 @@
+@import "../../scss/var";
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.mainWrap {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 15px;
+  box-shadow: 0px 1px 10px 5px $secondary-color;
+  min-width: 320px;
+  input {
+    margin-top: 2px;
+    padding: 5px;
+    border-radius: 5px;
+    border: 2px solid $secondary-color;
+    font-size: 16px;
+  }
+  button {
+    background-color: $primary-color;
+    border: none;
+    color: white;
+    font-size: 16px;
+    padding: 5px;
+    border-radius: 5px;
+    margin-top: 20px;
+    cursor: pointer;
+  }
+}
+.title {
+  text-align: center;
+  font-size: 25px;
+  font-weight: 500;
+}
+.emailName,
+.passwordName {
+  margin-top: 10px;
+  font-size: 18px;
+  font-weight: 500;
+}
+.signUpDiv {
+  margin-top: 15px;
+  font-size: 15px;
+  text-align: center;
+  a {
+    color: $primary-color;
+    cursor: pointer;
+    text-decoration: none;
+  }
+}

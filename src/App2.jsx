@@ -47,6 +47,7 @@ function App() {
       console.log("error ==> ", error.message);
     }
   };
+
   const login = async () => {
     try {
       const user = await signInWithEmailAndPassword(
