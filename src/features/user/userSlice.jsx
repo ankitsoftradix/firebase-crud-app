@@ -9,7 +9,6 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     updateAuthUser: (state, { payload }) => {
-      console.log("payload ==> ", payload);
       state.authUserData = payload;
     },
   },
