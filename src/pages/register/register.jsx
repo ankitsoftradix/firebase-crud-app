@@ -4,18 +4,22 @@ import { Link } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase-config";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { updateAuthUser } from "../../features/user/userSlice";
 
 const Register = () => {
   const [registerData, setRegisterData] = useState({ email: "", password: "" });
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const register = async () => {
     try {
-      await createUserWithEmailAndPassword(
+      const userData = await createUserWithEmailAndPassword(
         auth,
         registerData.email,
         registerData.password
       );
+      dispatch(updateAuthUser(userData.user));
       navigate("/dashboard");
     } catch (error) {
       console.log("error ==> ", error.message);
