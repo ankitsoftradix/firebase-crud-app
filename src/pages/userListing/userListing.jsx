@@ -4,7 +4,13 @@ import Dashboard from "../dashboard/Dashboard";
 import styles from "./UserListing.module.scss";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
-import { addDoc, collection, onSnapshot } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  onSnapshot,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../../firebase-config";
 import { useSelector } from "react-redux";
 import { getAuthUser } from "../../features/user/userSlice";
@@ -25,10 +31,26 @@ const UserListing = () => {
   const usersRef = collection(db, "admins", authUser.uid, "users");
   const [showSidebar, setShowSidebar] = useState(false);
   const [userList, setUserList] = useState([]);
+  const [isEdit, setIsEdit] = useState({
+    check: false,
+    data: { username: "", email: "", status: "", id: "" },
+  });
   const createSubCollection = async (values, errors) => {
     if (!userList.filter((item) => item.email === values.email).length > 0) {
       setShowSidebar(false);
-      await addDoc(usersRef, values);
+      if (isEdit.check) {
+        const userDoc = doc(
+          db,
+          "admins",
+          authUser.uid,
+          "users",
+          isEdit.data.id
+        );
+        const updatedUser = await updateDoc(userDoc, isEdit.data);
+        console.log("updatedUser ==> ", updatedUser);
+      } else {
+        await addDoc(usersRef, values);
+      }
     } else {
       errors.setErrors({ email: "Email is already exists" });
     }
@@ -50,7 +72,17 @@ const UserListing = () => {
         <div className={styles.topDiv}>
           <span>All Users</span>
           <input type="text" placeholder="Search users" />
-          <button onClick={() => setShowSidebar(true)}>Add User</button>
+          <button
+            onClick={() => {
+              setIsEdit({
+                check: false,
+                data: { username: "", email: "", status: "", id: "" },
+              });
+              setShowSidebar(true);
+            }}
+          >
+            Add User
+          </button>
         </div>
         <div className={styles.bottomDiv}>
           <table>
@@ -71,7 +103,23 @@ const UserListing = () => {
                   <td>{user.email}</td>
                   <td>{user.status}</td>
                   <td>
-                    <button className={styles.editUser}>Edit</button>
+                    <button
+                      className={styles.editUser}
+                      onClick={() => {
+                        setIsEdit({
+                          check: true,
+                          data: {
+                            username: user.username,
+                            email: user.email,
+                            status: user.status,
+                            id: user.id,
+                          },
+                        });
+                        setShowSidebar(true);
+                      }}
+                    >
+                      Edit
+                    </button>
                     <button className={styles.deleteUser}>Delete</button>
                   </td>
                 </tr>
@@ -82,14 +130,14 @@ const UserListing = () => {
         <RightSidebar
           showSidebar={showSidebar}
           setShowSidebar={setShowSidebar}
-          title="Add User"
+          title={isEdit.check ? "Edit User" : "Add User"}
         >
           <div className={styles.sideBarWrap}>
             <Formik
               initialValues={{
-                username: "",
-                email: "",
-                status: "",
+                username: isEdit.data.username,
+                email: isEdit.data.email,
+                status: isEdit.data.status,
               }}
               validationSchema={ValidateSchema}
               onSubmit={(values, errors) => {
