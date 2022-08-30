@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import styles from "./Register.module.scss";
 import { Link } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebase-config";
+import { auth, db } from "../../firebase-config";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { updateAuthUser } from "../../features/user/userSlice";
+import { addDoc, collection, doc, setDoc } from "firebase/firestore";
 
 const Register = () => {
   const [registerData, setRegisterData] = useState({ email: "", password: "" });
@@ -19,6 +20,12 @@ const Register = () => {
         registerData.email,
         registerData.password
       );
+      let adminCollectionRef = await doc(db, `admins/${userData.user.uid}`);
+      await setDoc(adminCollectionRef, {
+        accessToken: userData.user.accessToken,
+        email: userData.user.email,
+        id: userData.user.uid,
+      });
       dispatch(updateAuthUser(userData.user));
       navigate("/dashboard");
     } catch (error) {

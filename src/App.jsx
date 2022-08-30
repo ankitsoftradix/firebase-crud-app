@@ -3,8 +3,9 @@ import Login from "./pages/login/Login";
 import "./scss/App.scss";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Register from "./pages/register/Register";
-import Dashboard from "./pages/dashboard/Dashboard";
 import PrivateRoute from "./components/privateRoute/PrivateRoute";
+import Home from "./pages/home/Home";
+import UserListing from "./pages/userListing/UserListing";
 
 const App = () => {
   return (
@@ -16,7 +17,7 @@ const App = () => {
           path="/dashboard"
           element={
             <PrivateRoute>
-              <Dashboard />
+              <Home />
             </PrivateRoute>
           }
         />
@@ -24,7 +25,15 @@ const App = () => {
           path="/"
           element={
             <PrivateRoute>
-              <Dashboard />
+              <Home />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <PrivateRoute>
+              <UserListing />
             </PrivateRoute>
           }
         />

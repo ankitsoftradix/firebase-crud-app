@@ -1,10 +1,11 @@
-import React, { useEffect } from "react";
+import React from "react";
 import styles from "./Sidebar.module.scss";
 import { BiLogOut } from "react-icons/bi";
-import { FiUser } from "react-icons/fi";
+import { FaUserAlt } from "react-icons/fa";
+import { FiUsers } from "react-icons/fi";
 import { signOut } from "firebase/auth";
 import { auth } from "../../firebase-config";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { getAuthUser } from "../../features/user/userSlice";
 
@@ -16,21 +17,22 @@ const Sidebar = () => {
     navigate("/login");
   };
 
-  useEffect(() => {
-    console.log("authUser ==> ", authUser);
-  }, [authUser]);
-
   return (
     <div className={styles.sidebarWrap}>
       <div className={styles.topWrap}>
-        <div className={styles.header}>
+        <Link className={styles.header} to="/dashboard">
           <img src={require("../../assest/firebase_logo.png")} alt="logo" />
           <span>Firebase</span>
-        </div>
+        </Link>
+
+        <Link className={styles.users} to="/users">
+          <FiUsers />
+          <span>Users</span>
+        </Link>
       </div>
       <div className={styles.bottomWrap}>
         <div className={styles.authUser}>
-          <FiUser />
+          <FaUserAlt />
           <span>{authUser.email}</span>
         </div>
         <div className={styles.footer} style={{ cursor: "pointer" }}>
