@@ -22,7 +22,6 @@ const Register = () => {
       );
       let adminCollectionRef = await doc(db, `admins/${userData.user.uid}`);
       await setDoc(adminCollectionRef, {
-        accessToken: userData.user.accessToken,
         email: userData.user.email,
         id: userData.user.uid,
       });

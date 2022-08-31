@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import RightSidebar from "../../components/rightSidebar/RightSidebar";
 import Dashboard from "../dashboard/Dashboard";
 import styles from "./UserListing.module.scss";
@@ -7,6 +7,7 @@ import * as Yup from "yup";
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   onSnapshot,
   updateDoc,
@@ -31,47 +32,81 @@ const UserListing = () => {
   const usersRef = collection(db, "admins", authUser.uid, "users");
   const [showSidebar, setShowSidebar] = useState(false);
   const [userList, setUserList] = useState([]);
+  const [showUsers, setShowUsers] = useState([]);
+  const inputRef = useRef();
   const [isEdit, setIsEdit] = useState({
     check: false,
     data: { username: "", email: "", status: "", id: "" },
   });
+
   const createSubCollection = async (values, errors) => {
-    if (!userList.filter((item) => item.email === values.email).length > 0) {
+    if (
+      isEdit.check &&
+      !userList.filter(
+        (item) => item.email === values.email && item.id !== isEdit.data.id
+      ).length > 0
+    ) {
       setShowSidebar(false);
-      if (isEdit.check) {
-        const userDoc = doc(
-          db,
-          "admins",
-          authUser.uid,
-          "users",
-          isEdit.data.id
-        );
-        const updatedUser = await updateDoc(userDoc, isEdit.data);
-        console.log("updatedUser ==> ", updatedUser);
-      } else {
-        await addDoc(usersRef, values);
-      }
+      const userDoc = doc(db, "admins", authUser.uid, "users", isEdit.data.id);
+      await updateDoc(userDoc, values);
+    } else if (
+      !isEdit.check &&
+      !userList.filter((item) => item.email === values.email).length > 0
+    ) {
+      setShowSidebar(false);
+      await addDoc(usersRef, values);
     } else {
       errors.setErrors({ email: "Email is already exists" });
+    }
+  };
+
+  const deleteUser = async (id) => {
+    const userDoc = doc(db, "admins", authUser.uid, "users", id);
+    await deleteDoc(userDoc);
+  };
+
+  const handleShowUser = (value) => {
+    if (value === "") {
+      setShowUsers(userList);
+    } else {
+      const newList = userList.filter((user) =>
+        user.username.toLowerCase().includes(value.toLowerCase())
+      );
+      setShowUsers(newList);
     }
   };
 
   useEffect(() => {
     onSnapshot(usersRef, (snapshot) => {
       setUserList(snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      if (inputRef.current.value === "") {
+        setShowUsers(
+          snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
+        );
+      } else {
+        const newList = snapshot.docs
+          .map((doc) => ({ ...doc.data(), id: doc.id }))
+          .filter((user) =>
+            user.username
+              .toLowerCase()
+              .includes(inputRef.current.value.toLowerCase())
+          );
+        setShowUsers(newList);
+      }
     });
   }, []);
-
-  // useEffect(() => {
-  //   console.log("userList ==> ", userList);
-  // }, [userList]);
 
   return (
     <Dashboard>
       <div className={styles.mainWrap}>
         <div className={styles.topDiv}>
           <span>All Users</span>
-          <input type="text" placeholder="Search users" />
+          <input
+            type="text"
+            placeholder="Search users"
+            onChange={(e) => handleShowUser(e.target.value)}
+            ref={inputRef}
+          />
           <button
             onClick={() => {
               setIsEdit({
@@ -97,7 +132,7 @@ const UserListing = () => {
               </tr>
             </thead>
             <tbody>
-              {userList.map((user) => (
+              {showUsers.map((user) => (
                 <tr key={user.id}>
                   <td>{user.username}</td>
                   <td>{user.email}</td>
@@ -120,7 +155,12 @@ const UserListing = () => {
                     >
                       Edit
                     </button>
-                    <button className={styles.deleteUser}>Delete</button>
+                    <button
+                      className={styles.deleteUser}
+                      onClick={() => deleteUser(user.id)}
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))}
