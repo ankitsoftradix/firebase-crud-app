@@ -20,27 +20,41 @@ import { getAuthUser } from "../../features/user/userSlice";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 
 const UserListing = () => {
-  const ValidateSchema = Yup.object().shape({
-    username: Yup.string()
-      .min(2, "Too Short!")
-      .max(50, "Too Long!")
-      .required("Enter a valid name"),
-    email: Yup.string().email("Invalid email").required("Enter a valid email"),
-    password: Yup.string()
-      .min(6, "Too Short!")
-      .max(50, "Too Long!")
-      .required("Password is required"),
+  const [isEdit, setIsEdit] = useState({
+    check: false,
+    data: { username: "", email: "", password: "", id: "" },
   });
+  const ValidateSchema = Yup.object().shape(
+    isEdit.check
+      ? {
+          username: Yup.string()
+            .min(2, "Too Short!")
+            .max(50, "Too Long!")
+            .required("Enter a valid name"),
+          email: Yup.string()
+            .email("Invalid email")
+            .required("Enter a valid email"),
+        }
+      : {
+          username: Yup.string()
+            .min(2, "Too Short!")
+            .max(50, "Too Long!")
+            .required("Enter a valid name"),
+          email: Yup.string()
+            .email("Invalid email")
+            .required("Enter a valid email"),
+          password: Yup.string()
+            .min(6, "Too Short!")
+            .max(50, "Too Long!")
+            .required("Password is required"),
+        }
+  );
   const authUser = useSelector(getAuthUser);
   const usersRef = collection(db, "users");
   const [showSidebar, setShowSidebar] = useState(false);
   const [userList, setUserList] = useState([]);
   const [showUsers, setShowUsers] = useState([]);
   const inputRef = useRef();
-  const [isEdit, setIsEdit] = useState({
-    check: false,
-    data: { username: "", email: "", password: "", id: "" },
-  });
 
   const createSubCollection = async (values, errors) => {
     if (
@@ -50,8 +64,11 @@ const UserListing = () => {
       ).length > 0
     ) {
       setShowSidebar(false);
-      const userDoc = doc(db, "admins", authUser.uid, "users", isEdit.data.id);
-      await updateDoc(userDoc, values);
+      const userDoc = doc(db, "users", isEdit.data.id);
+      await updateDoc(userDoc, {
+        username: values.username,
+        email: values.email,
+      });
     } else if (
       !isEdit.check &&
       !userList.filter((item) => item.email === values.email).length > 0
@@ -79,8 +96,8 @@ const UserListing = () => {
     }
   };
 
-  const deleteUser = async (id) => {
-    const userDoc = doc(db, "admins", authUser.uid, "users", id);
+  const removeUser = async (id) => {
+    const userDoc = doc(db, "users", id);
     await deleteDoc(userDoc);
   };
 
@@ -155,7 +172,15 @@ const UserListing = () => {
                   <td>{user.email}</td>
                   <td>
                     {/* <ReactForm.Check type="switch" id="custom-switch" /> */}
-                    <ReactForm.Check type="switch" />
+                    <ReactForm.Check
+                      type="switch"
+                      checked={user.active}
+                      onChange={() =>
+                        updateDoc(doc(db, "users", user.id), {
+                          active: !user.active,
+                        })
+                      }
+                    />
                   </td>
                   <td>
                     <button
@@ -177,7 +202,7 @@ const UserListing = () => {
                     </button>
                     <button
                       className={styles.deleteUser}
-                      onClick={() => deleteUser(user.id)}
+                      onClick={() => removeUser(user.id)}
                     >
                       Delete
                     </button>
@@ -234,20 +259,23 @@ const UserListing = () => {
                       <div className={styles.error}>{errors.email}</div>
                     )}
                   </div>
-                  <div className={styles.fieldWrap}>
-                    <div className={styles.fieldName}>Password</div>
-                    <input
-                      type="text"
-                      name="password"
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      value={values.password}
-                      placeholder="Enter password"
-                    />
-                    {errors.password && touched.password && (
-                      <div className={styles.error}>{errors.password}</div>
-                    )}
-                  </div>
+                  {!isEdit.check && (
+                    <div className={styles.fieldWrap}>
+                      <div className={styles.fieldName}>Password</div>
+                      <input
+                        type="text"
+                        name="password"
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        value={values.password}
+                        placeholder="Enter password"
+                      />
+                      {errors.password && touched.password && (
+                        <div className={styles.error}>{errors.password}</div>
+                      )}
+                    </div>
+                  )}
+
                   <button type="submit" className={styles.submitBtn}>
                     Submit
                   </button>

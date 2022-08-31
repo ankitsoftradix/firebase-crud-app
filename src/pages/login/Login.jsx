@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import styles from "./Login.module.scss";
 import { Link } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebase-config";
+import { auth, db } from "../../firebase-config";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { updateAuthUser } from "../../features/user/userSlice";
+import { doc, getDoc } from "firebase/firestore";
 
 const Login = () => {
   const [loginData, setLoginData] = useState({ email: "", password: "" });
@@ -19,7 +20,11 @@ const Login = () => {
         loginData.email,
         loginData.password
       );
-      dispatch(updateAuthUser(userData.user));
+      const userRef = doc(db, "users", userData.user.uid);
+      const docSnap = await getDoc(userRef);
+      console.log("docSnap ==> ", docSnap.data());
+
+      dispatch(updateAuthUser({ ...userData.user, type: docSnap.data().type }));
       navigate("/dashboard");
     } catch (error) {
       console.log("error ==> ", error.message);
