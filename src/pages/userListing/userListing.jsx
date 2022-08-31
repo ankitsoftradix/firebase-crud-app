@@ -3,6 +3,7 @@ import RightSidebar from "../../components/rightSidebar/RightSidebar";
 import Dashboard from "../dashboard/Dashboard";
 import styles from "./UserListing.module.scss";
 import { Formik, Form } from "formik";
+import ReactForm from "react-bootstrap/Form";
 import * as Yup from "yup";
 import {
   addDoc,
@@ -10,11 +11,13 @@ import {
   deleteDoc,
   doc,
   onSnapshot,
+  setDoc,
   updateDoc,
 } from "firebase/firestore";
-import { db } from "../../firebase-config";
+import { auth, db } from "../../firebase-config";
 import { useSelector } from "react-redux";
 import { getAuthUser } from "../../features/user/userSlice";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 
 const UserListing = () => {
   const ValidateSchema = Yup.object().shape({
@@ -23,20 +26,20 @@ const UserListing = () => {
       .max(50, "Too Long!")
       .required("Enter a valid name"),
     email: Yup.string().email("Invalid email").required("Enter a valid email"),
-    status: Yup.string()
-      .min(2, "Too Short!")
+    password: Yup.string()
+      .min(6, "Too Short!")
       .max(50, "Too Long!")
-      .required("Status is required"),
+      .required("Password is required"),
   });
   const authUser = useSelector(getAuthUser);
-  const usersRef = collection(db, "admins", authUser.uid, "users");
+  const usersRef = collection(db, "users");
   const [showSidebar, setShowSidebar] = useState(false);
   const [userList, setUserList] = useState([]);
   const [showUsers, setShowUsers] = useState([]);
   const inputRef = useRef();
   const [isEdit, setIsEdit] = useState({
     check: false,
-    data: { username: "", email: "", status: "", id: "" },
+    data: { username: "", email: "", password: "", id: "" },
   });
 
   const createSubCollection = async (values, errors) => {
@@ -54,7 +57,23 @@ const UserListing = () => {
       !userList.filter((item) => item.email === values.email).length > 0
     ) {
       setShowSidebar(false);
-      await addDoc(usersRef, values);
+      try {
+        const userData = await createUserWithEmailAndPassword(
+          auth,
+          values.email,
+          values.password
+        );
+        let adminCollectionRef = await doc(db, `users/${userData.user.uid}`);
+        await setDoc(adminCollectionRef, {
+          email: userData.user.email,
+          id: userData.user.uid,
+          type: 2,
+          username: values.username,
+          active: true,
+        });
+      } catch (error) {
+        console.log("error ==> ", error.message);
+      }
     } else {
       errors.setErrors({ email: "Email is already exists" });
     }
@@ -78,14 +97,12 @@ const UserListing = () => {
 
   useEffect(() => {
     onSnapshot(usersRef, (snapshot) => {
-      setUserList(snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })));
+      setUserList(snapshot.docs.map((doc) => ({ ...doc.data() })));
       if (inputRef.current.value === "") {
-        setShowUsers(
-          snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
-        );
+        setShowUsers(snapshot.docs.map((doc) => ({ ...doc.data() })));
       } else {
         const newList = snapshot.docs
-          .map((doc) => ({ ...doc.data(), id: doc.id }))
+          .map((doc) => ({ ...doc.data() }))
           .filter((user) =>
             user.username
               .toLowerCase()
@@ -111,7 +128,7 @@ const UserListing = () => {
             onClick={() => {
               setIsEdit({
                 check: false,
-                data: { username: "", email: "", status: "", id: "" },
+                data: { username: "", email: "", password: "", id: "" },
               });
               setShowSidebar(true);
             }}
@@ -136,7 +153,10 @@ const UserListing = () => {
                 <tr key={user.id}>
                   <td>{user.username}</td>
                   <td>{user.email}</td>
-                  <td>{user.status}</td>
+                  <td>
+                    {/* <ReactForm.Check type="switch" id="custom-switch" /> */}
+                    <ReactForm.Check type="switch" />
+                  </td>
                   <td>
                     <button
                       className={styles.editUser}
@@ -146,7 +166,7 @@ const UserListing = () => {
                           data: {
                             username: user.username,
                             email: user.email,
-                            status: user.status,
+                            password: user.password,
                             id: user.id,
                           },
                         });
@@ -177,7 +197,7 @@ const UserListing = () => {
               initialValues={{
                 username: isEdit.data.username,
                 email: isEdit.data.email,
-                status: isEdit.data.status,
+                password: isEdit.data.password,
               }}
               validationSchema={ValidateSchema}
               onSubmit={(values, errors) => {
@@ -215,17 +235,17 @@ const UserListing = () => {
                     )}
                   </div>
                   <div className={styles.fieldWrap}>
-                    <div className={styles.fieldName}>Status</div>
+                    <div className={styles.fieldName}>Password</div>
                     <input
                       type="text"
-                      name="status"
+                      name="password"
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      value={values.status}
-                      placeholder="Enter status"
+                      value={values.password}
+                      placeholder="Enter password"
                     />
-                    {errors.status && touched.status && (
-                      <div className={styles.error}>{errors.status}</div>
+                    {errors.password && touched.password && (
+                      <div className={styles.error}>{errors.password}</div>
                     )}
                   </div>
                   <button type="submit" className={styles.submitBtn}>

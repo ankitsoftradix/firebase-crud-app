@@ -9,7 +9,11 @@ import { updateAuthUser } from "../../features/user/userSlice";
 import { addDoc, collection, doc, setDoc } from "firebase/firestore";
 
 const Register = () => {
-  const [registerData, setRegisterData] = useState({ email: "", password: "" });
+  const [registerData, setRegisterData] = useState({
+    email: "",
+    password: "",
+    name: "",
+  });
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -20,10 +24,13 @@ const Register = () => {
         registerData.email,
         registerData.password
       );
-      let adminCollectionRef = await doc(db, `admins/${userData.user.uid}`);
+      let adminCollectionRef = await doc(db, `users/${userData.user.uid}`);
       await setDoc(adminCollectionRef, {
         email: userData.user.email,
         id: userData.user.uid,
+        type: 2,
+        username: registerData.name,
+        active: true,
       });
       dispatch(updateAuthUser(userData.user));
       navigate("/dashboard");
@@ -36,6 +43,14 @@ const Register = () => {
     <div className={styles.container}>
       <div className={styles.mainWrap}>
         <div className={styles.title}>Sign Up</div>
+        <div className={styles.userName}>Name</div>
+        <input
+          type="text"
+          placeholder="Enter name"
+          onChange={(e) =>
+            setRegisterData({ ...registerData, name: e.target.value })
+          }
+        />
         <div className={styles.emailName}>Email address</div>
         <input
           type="text"
