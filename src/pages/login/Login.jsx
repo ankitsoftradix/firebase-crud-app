@@ -7,18 +7,29 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { updateAuthUser } from "../../features/user/userSlice";
 import { doc, getDoc } from "firebase/firestore";
+import * as Yup from "yup";
+import { Formik, Form } from "formik";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Login = () => {
-  const [loginData, setLoginData] = useState({ email: "", password: "" });
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const login = async () => {
+  const ValidateSchema = Yup.object().shape({
+    email: Yup.string().email("Invalid email").required("Enter a valid email"),
+    password: Yup.string()
+      .min(6, "Too Short!")
+      .max(50, "Too Long!")
+      .required("Password is required"),
+  });
+
+  const login = async (values, errors) => {
     try {
       const userData = await signInWithEmailAndPassword(
         auth,
-        loginData.email,
-        loginData.password
+        values.email,
+        values.password
       );
       const userRef = doc(db, "users", userData.user.uid);
       const docSnap = await getDoc(userRef);
@@ -28,6 +39,7 @@ const Login = () => {
       navigate("/dashboard");
     } catch (error) {
       console.log("error ==> ", error.message);
+      toast.error(error.message);
     }
   };
 
@@ -35,25 +47,53 @@ const Login = () => {
     <div className={styles.container}>
       <div className={styles.mainWrap}>
         <div className={styles.title}>Sign In</div>
-        <div className={styles.emailName}>Email address</div>
-        <input
-          type="text"
-          placeholder="Enter email"
-          onChange={(e) =>
-            setLoginData({ ...loginData, email: e.target.value })
-          }
-        />
-        <div className={styles.passwordName}>Password</div>
-        <input
-          type="text"
-          placeholder="Enter password"
-          onChange={(e) =>
-            setLoginData({ ...loginData, password: e.target.value })
-          }
-        />
-        <button onClick={login} className={styles.submitBtn}>
-          Submit
-        </button>
+        <Formik
+          initialValues={{
+            email: "",
+            password: "",
+          }}
+          validationSchema={ValidateSchema}
+          onSubmit={(values, errors) => {
+            login(values, errors);
+          }}
+        >
+          {({ errors, touched, handleChange, handleBlur, values }) => (
+            <Form>
+              <div className={styles.fieldWrap}>
+                <div className={styles.fieldName}>Email</div>
+                <input
+                  type="text"
+                  name="email"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values.email}
+                  placeholder="Enter email"
+                />
+                {errors.email && touched.email && (
+                  <div className={styles.error}>{errors.email}</div>
+                )}
+              </div>
+              <div className={styles.fieldWrap}>
+                <div className={styles.fieldName}>Password</div>
+                <input
+                  type="text"
+                  name="password"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values.password}
+                  placeholder="Enter password"
+                />
+                {errors.password && touched.password && (
+                  <div className={styles.error}>{errors.password}</div>
+                )}
+              </div>
+
+              <button type="submit" className={styles.submitBtn}>
+                Submit
+              </button>
+            </Form>
+          )}
+        </Formik>
         <div className={styles.signUpDiv}>
           Don't have an account?{" "}
           <Link to="/register" className={styles.signUpLink}>
@@ -61,6 +101,7 @@ const Login = () => {
           </Link>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };
