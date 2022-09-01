@@ -1,13 +1,36 @@
-import React, { useEffect } from "react";
+import React from "react";
 import styles from "./Sidebar.module.scss";
-import { BiLogOut } from "react-icons/bi";
-import { FaUserAlt } from "react-icons/fa";
+import { GoHome } from "react-icons/go";
 import { FiUsers } from "react-icons/fi";
-import { signOut } from "firebase/auth";
-import { auth } from "../../firebase-config";
+import { FaRegUserCircle } from "react-icons/fa";
+import { BiLogOut } from "react-icons/bi";
+import { HiOutlinePhotograph } from "react-icons/hi";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { getAuthUser } from "../../features/user/userSlice";
+import { signOut } from "firebase/auth";
+import { auth } from "../../firebase-config";
+
+const sidebarNavItems = [
+  {
+    display: "Dashboard",
+    icon: <GoHome />,
+    to: "/",
+    section: "",
+  },
+  {
+    display: "Users",
+    icon: <FiUsers />,
+    to: "/users",
+    section: "",
+  },
+  {
+    display: "Posts",
+    icon: <HiOutlinePhotograph />,
+    to: "/posts",
+    section: "",
+  },
+];
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -16,33 +39,31 @@ const Sidebar = () => {
     await signOut(auth);
     navigate("/login");
   };
-
-  useEffect(() => {
-    console.log("authUser ==> ", authUser);
-  }, [authUser]);
-
   return (
-    <div className={styles.sidebarWrap}>
-      <div className={styles.topWrap}>
-        <Link className={styles.header} to="/dashboard">
-          <img src={require("../../assest/firebase_logo.png")} alt="logo" />
-          <span>Firebase</span>
-        </Link>
-        {authUser.type === 1 && (
-          <Link className={styles.users} to="/users">
-            <FiUsers />
-            <span>Users</span>
+    <div className={styles.sidebar}>
+      <div className={styles.menu}>
+        <div className={styles.logo}>Firebase</div>
+        {sidebarNavItems.map((item, index) => (
+          <Link to={item.to} key={index}>
+            <div className={styles.item}>
+              <div className={styles.icon}>{item.icon}</div>
+              <div className={styles.text}>{item.display}</div>
+            </div>
           </Link>
-        )}
-      </div>
-      <div className={styles.bottomWrap}>
-        <div className={styles.authUser}>
-          <FaUserAlt />
-          <span>{authUser.email}</span>
+        ))}
+        <div className={styles.item} onClick={logout}>
+          <div className={styles.icon}>
+            <BiLogOut />
+          </div>
+          <div className={styles.text}>Log Out</div>
         </div>
-        <div className={styles.footer} style={{ cursor: "pointer" }}>
-          <BiLogOut />
-          <span onClick={logout}>Log Out</span>
+      </div>
+      <div className={styles.bottomMenu}>
+        <div className={styles.item}>
+          <div className={styles.icon}>
+            <FaRegUserCircle />
+          </div>
+          <div className={styles.text}>{authUser.email}</div>
         </div>
       </div>
     </div>

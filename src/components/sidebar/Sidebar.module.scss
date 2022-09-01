@@ -1,63 +1,77 @@
 @import "../../scss/var";
-.sidebarWrap {
-  width: 250px;
-  padding: 10px;
-  box-shadow: 5px 0px 10px $secondary-color;
+@import url("https://fonts.googleapis.com/css2?family=Mochiy+Pop+P+One&display=swap");
+.sidebar {
   height: 100vh;
+  width: 320px;
+  background-color: #fff;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-}
-.header {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  width: fit-content;
-  text-decoration: none;
-  color: black;
-  img {
-    height: 40px;
+
+  .logo {
+    display: grid;
+    place-items: center;
+    height: 120px;
+    font-size: 1.5rem;
+    font-weight: 700px;
+    font-family: "Mochiy Pop P One", sans-serif;
   }
-  span {
-    font-size: 22px;
-    font-weight: 400;
-    margin-left: 10px;
-  }
-}
-.footer,
-.authUser {
-  width: fit-content;
-  padding-bottom: 15px;
-  padding-left: 5px;
-  display: flex;
-  align-items: center;
-  font-size: 16px;
-  svg {
-    font-size: 1.6em;
-  }
-  span {
-    font-size: 19px;
-    font-weight: 400;
-    margin-left: 10px;
+
+  .menu {
+    position: relative;
+    & a {
+      text-decoration: none;
+    }
+    .item {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      place-content: flex-start;
+      padding: 1rem 3rem;
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: #555555;
+      transition: color 0.3s ease-in-out;
+
+      &.active {
+        color: #fff;
+      }
+      .icon {
+        margin-right: 1rem;
+        i {
+          font-size: 1.75rem;
+        }
+      }
+      .text {
+        padding-top: 3px;
+      }
+    }
   }
 }
 
-.users {
-  cursor: pointer;
-  width: fit-content;
-  padding-left: 9px;
-  display: flex;
-  align-items: center;
-  font-size: 16px;
-  margin-top: 30px;
-  text-decoration: none;
-  color: black;
-  svg {
-    font-size: 1.6em;
-  }
-  span {
-    font-size: 19px;
-    font-weight: 400;
-    margin-left: 15px;
+.bottomMenu {
+  .item {
+    display: flex;
+    align-items: center;
+    place-content: flex-start;
+    justify-content: center;
+    padding: 1rem 0;
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #555555;
+    transition: color 0.3s ease-in-out;
+
+    &.active {
+      color: #fff;
+    }
+    .icon {
+      margin-right: 0.5rem;
+      i {
+        font-size: 1.75rem;
+      }
+    }
+    .text {
+      padding-top: 3px;
+    }
   }
 }
