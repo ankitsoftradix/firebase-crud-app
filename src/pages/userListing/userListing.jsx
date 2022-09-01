@@ -123,16 +123,26 @@ const UserListing = () => {
 
   useEffect(() => {
     onSnapshot(usersRef, (snapshot) => {
-      setUserList(snapshot.docs.map((doc) => ({ ...doc.data() })));
+      setUserList(
+        snapshot.docs
+          .map((doc) => ({ ...doc.data() }))
+          .filter((user) => user.type === 2)
+      );
       if (inputRef.current.value === "") {
-        setShowUsers(snapshot.docs.map((doc) => ({ ...doc.data() })));
+        setShowUsers(
+          snapshot.docs
+            .map((doc) => ({ ...doc.data() }))
+            .filter((user) => user.type === 2)
+        );
       } else {
         const newList = snapshot.docs
           .map((doc) => ({ ...doc.data() }))
-          .filter((user) =>
-            user.username
-              .toLowerCase()
-              .includes(inputRef.current.value.toLowerCase())
+          .filter(
+            (user) =>
+              user.username
+                .toLowerCase()
+                .includes(inputRef.current.value.toLowerCase()) &&
+              user.type === 2
           );
         setShowUsers(newList);
       }
