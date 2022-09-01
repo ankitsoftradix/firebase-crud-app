@@ -11,10 +11,12 @@ import * as Yup from "yup";
 import { Formik, Form } from "formik";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { RotatingLines } from "react-loader-spinner";
 
 const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
 
   const ValidateSchema = Yup.object().shape({
     email: Yup.string().email("Invalid email").required("Enter a valid email"),
@@ -25,6 +27,7 @@ const Login = () => {
   });
 
   const login = async (values, errors) => {
+    setLoading(true);
     try {
       const userData = await signInWithEmailAndPassword(
         auth,
@@ -41,12 +44,13 @@ const Login = () => {
       console.log("error ==> ", error.message);
       toast.error(error.message);
     }
+    setLoading(false);
   };
 
   return (
     <div className={styles.container}>
       <div className={styles.mainWrap}>
-        <div className={styles.title}>Sign In</div>
+        <div className={styles.title}>Login</div>
         <Formik
           initialValues={{
             email: "",
@@ -88,8 +92,21 @@ const Login = () => {
                 )}
               </div>
 
-              <button type="submit" className={styles.submitBtn}>
+              <button
+                type="submit"
+                className={styles.submitBtn}
+                disabled={loading}
+              >
                 Submit
+                {loading && (
+                  <RotatingLines
+                    strokeColor="white"
+                    strokeWidth="5"
+                    animationDuration="0.75"
+                    width="20"
+                    visible={true}
+                  />
+                )}
               </button>
             </Form>
           )}
