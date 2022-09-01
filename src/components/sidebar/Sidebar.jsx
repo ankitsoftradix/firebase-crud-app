@@ -15,7 +15,7 @@ const sidebarNavItems = [
   {
     display: "Dashboard",
     icon: <GoHome />,
-    to: "/",
+    to: "/dashboard",
     section: "",
   },
   {
