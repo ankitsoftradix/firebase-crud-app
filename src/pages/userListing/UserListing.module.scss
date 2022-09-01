@@ -92,6 +92,10 @@
   border-radius: 5px;
   cursor: pointer;
   margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
 }
 
 .error {

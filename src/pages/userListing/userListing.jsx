@@ -18,6 +18,9 @@ import { auth, db } from "../../firebase-config";
 import { useSelector } from "react-redux";
 import { getAuthUser } from "../../features/user/userSlice";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { RotatingLines } from "react-loader-spinner";
 
 const UserListing = () => {
   const [isEdit, setIsEdit] = useState({
@@ -55,25 +58,27 @@ const UserListing = () => {
   const [userList, setUserList] = useState([]);
   const [showUsers, setShowUsers] = useState([]);
   const inputRef = useRef();
+  const [loading, setLoading] = useState(false);
 
   const createSubCollection = async (values, errors) => {
+    setLoading(true);
     if (
       isEdit.check &&
       !userList.filter(
         (item) => item.email === values.email && item.id !== isEdit.data.id
       ).length > 0
     ) {
-      setShowSidebar(false);
       const userDoc = doc(db, "users", isEdit.data.id);
       await updateDoc(userDoc, {
         username: values.username,
         email: values.email,
       });
+      toast.success("User updated successfully");
+      setShowSidebar(false);
     } else if (
       !isEdit.check &&
       !userList.filter((item) => item.email === values.email).length > 0
     ) {
-      setShowSidebar(false);
       try {
         const userData = await createUserWithEmailAndPassword(
           auth,
@@ -88,12 +93,16 @@ const UserListing = () => {
           username: values.username,
           active: true,
         });
+        toast.success("User added successfully");
+        setShowSidebar(false);
       } catch (error) {
         console.log("error ==> ", error.message);
+        toast.error(error.message);
       }
     } else {
       errors.setErrors({ email: "Email is already exists" });
     }
+    setLoading(false);
   };
 
   const removeUser = async (id) => {
@@ -278,6 +287,15 @@ const UserListing = () => {
 
                   <button type="submit" className={styles.submitBtn}>
                     Submit
+                    {loading && (
+                      <RotatingLines
+                        strokeColor="white"
+                        strokeWidth="5"
+                        animationDuration="0.75"
+                        width="20"
+                        visible={true}
+                      />
+                    )}
                   </button>
                 </Form>
               )}
@@ -285,6 +303,7 @@ const UserListing = () => {
           </div>
         </RightSidebar>
       </div>
+      <ToastContainer />
     </Dashboard>
   );
 };
